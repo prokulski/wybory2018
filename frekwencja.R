@@ -47,7 +47,7 @@ lista_powiatow[str_sub(lista_powiatow$TERYT, 1, 4) == "1465", "TERYT"] <- "14650
 getFrekwencja <- function(TERYT) {
   Sys.sleep(sample(seq(0.1, 1, 0.1), size = 1))
 
-  page_url <- glue("https://wybory2018.pkw.gov.pl/pl/frekwencja/{TERYT}#f2")
+  page_url <- glue("https://wybory2018.pkw.gov.pl/pl/frekwencja/{TERYT}#f1000000")
 
   page <- read_html(page_url)
 
@@ -61,7 +61,7 @@ getFrekwencja <- function(TERYT) {
   for(i in 1:length(trs)) {
     tds <- trs[[i]] %>% html_nodes("td")
 
-    gm_TERYT <- tds[[1]] %>% html_node("a") %>% html_attr("href") %>% str_replace_all("/pl/frekwencja/|#f2", "")
+    gm_TERYT <- tds[[1]] %>% html_node("a") %>% html_attr("href") %>% str_replace_all("/pl/frekwencja/|#f1000000", "")
     gm_frekwencja <- tds[[6]] %>% html_text() %>% str_replace_all("\\%", "") %>% as.numeric()
 
     gmina <- bind_rows(gmina, tibble(TERYT = gm_TERYT, frekwencja = gm_frekwencja))
@@ -105,7 +105,7 @@ ggplot() +
   geom_sf(data = wojewodztwa, fill = NA, color = "gray90", size = 0.4) +
   scale_fill_distiller(palette = "Reds", direction = 1) +
   labs(title = "Frekwencja w wyborach samorządowych 2018\nna poziomie gmin",
-       subtitle = "Dane z godziny 17:00",
+       subtitle = "Dane końcowe",
        caption = "(c) Lukasz Prokulski, fb.com/DaneAnalizy",
        fill = "Frekwencja")
 
@@ -129,6 +129,6 @@ ggplot() +
   geom_sf(data = wojewodztwa, fill = NA, color = "gray90", size = 0.4) +
   scale_fill_distiller(palette = "Reds", direction = 1) +
   labs(title = "Frekwencja w wyborach samorządowych 2018\nna poziomie powiatów",
-       subtitle = "Dane z godziny 17:00, uśrednione z danych gminnych do powiatów",
+       subtitle = "Dane końcowe, uśrednione z danych gminnych do powiatów",
        caption = "(c) Lukasz Prokulski, fb.com/DaneAnalizy",
        fill = "Frekwencja")
