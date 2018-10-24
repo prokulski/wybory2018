@@ -114,9 +114,10 @@ wyniki_mapa <- left_join(gminy_mapa %>% mutate(jpt_kod_je = str_sub(jpt_kod_je, 
                          by = c("jpt_kod_je" = "TERYT"))
 
 # dane ciągłe
-ggplot() +
+p1 <- ggplot() +
   geom_sf(data = wyniki_mapa,
           aes(fill = frekwencja), size = 0.1, color = "gray40") +
+  geom_sf(data = powiaty_mapa, fill = NA, color = "gray70", size = 0.2) +
   geom_sf(data = wojewodztwa, fill = NA, color = "gray90", size = 0.4) +
   scale_fill_distiller(palette = "Reds", direction = 1) +
   labs(title = "Frekwencja w wyborach samorządowych 2018\nna poziomie gmin",
@@ -124,17 +125,22 @@ ggplot() +
        caption = "(c) Lukasz Prokulski, fb.com/DaneAnalizy",
        fill = "Frekwencja")
 
+ggsave(p1, file = "frekwencja_gminy_1.png", width = 7, height = 7, dpi = 300)
+
 
 # przedziałami
-ggplot() +
+p2 <- ggplot() +
   geom_sf(data = wyniki_mapa,
           aes(fill = frekwencja_przed), size = 0.1, color = "gray40") +
+  geom_sf(data = powiaty_mapa, fill = NA, color = "gray30", size = 0.2) +
   geom_sf(data = wojewodztwa, fill = NA, color = "gray10", size = 0.4) +
   scale_fill_manual(values = rev(RColorBrewer::brewer.pal(n_przed, "RdYlBu"))) +
   labs(title = "Frekwencja w wyborach samorządowych 2018\nna poziomie gmin",
        subtitle = "Dane końcowe",
        caption = "(c) Lukasz Prokulski, fb.com/DaneAnalizy",
        fill = "Frekwencja")
+
+ggsave(p2, file = "frekwencja_gminy_2.png", width = 7, height = 7, dpi = 300)
 
 
 
@@ -143,13 +149,17 @@ wyniki_pow <- wyniki_frek %>%
   mutate(TERYT = str_sub(TERYT, 1, 4)) %>%
   group_by(TERYT) %>%
   summarise(m_frek = mean(frekwencja)) %>%
-  ungroup()
+  ungroup() %>%
+  mutate(frekwencja_przed = cut(m_frek, breaks = seq(0, 100, 10)))
+
+
 
 wyniki_pow_mapa <- left_join(wyniki_pow,
                              powiaty_mapa,
                              by = c("TERYT" = "jpt_kod_je"))
 
-ggplot() +
+# ciągłe
+p3 <- ggplot() +
   geom_sf(data = wyniki_pow_mapa,
           aes(fill = m_frek), size = 0.1, color = "gray40") +
   geom_sf(data = wojewodztwa, fill = NA, color = "gray90", size = 0.4) +
@@ -158,3 +168,23 @@ ggplot() +
        subtitle = "Dane końcowe, uśrednione z danych gminnych do powiatów",
        caption = "(c) Lukasz Prokulski, fb.com/DaneAnalizy",
        fill = "Frekwencja")
+
+ggsave(p3, file = "frekwencja_powiaty_1.png", width = 7, height = 7, dpi = 300)
+
+
+# ile jest przedziałów?
+n_przed <- wyniki_pow %>% count(frekwencja_przed) %>% filter(n != 0) %>% nrow()
+
+
+# przedziałami
+p4 <- ggplot() +
+  geom_sf(data = wyniki_pow_mapa,
+          aes(fill = frekwencja_przed), size = 0.1, color = "gray40") +
+  geom_sf(data = wojewodztwa, fill = NA, color = "gray10", size = 0.4) +
+  scale_fill_manual(values = rev(RColorBrewer::brewer.pal(n_przed, "RdYlBu"))) +
+  labs(title = "Frekwencja w wyborach samorządowych 2018\nna poziomie powiatów",
+       subtitle = "Dane końcowe, uśrednione z danych gminnych do powiatów",
+       caption = "(c) Lukasz Prokulski, fb.com/DaneAnalizy",
+       fill = "Frekwencja")
+
+ggsave(p4, file = "frekwencja_powiaty_2.png", width = 7, height = 7, dpi = 300)
