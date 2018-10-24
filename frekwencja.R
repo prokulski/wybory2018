@@ -83,22 +83,37 @@ for(i in 1:nrow(lista_powiatow)) {
 wyniki_frek <- distinct(wyniki_frek)
 
 # poprawka dla warszawy (uśrednienie do całej z dzielnic)
-wyniki_frek_wawa <- wyniki_frek %>%
-  filter(str_sub(TERYT, 1, 5) == "14650")
-
 wyniki_frek <- bind_rows(wyniki_frek,
                          tibble(TERYT = "146501",
-                                frekwencja = mean(wyniki_frek_wawa$frekwencja)))
+                                frekwencja = wyniki_frek %>%
+                                  filter(str_sub(TERYT, 1, 5) == "14650") %>%
+                                  pull(frekwencja) %>%
+                                  mean()))
 
 
+# poprawka na gminę 320304 (likwidowana) - uśrednienie do całego powiatu
+wyniki_frek <- bind_rows(wyniki_frek,
+                         tibble(TERYT = "320304",
+                                frekwencja = wyniki_frek %>%
+                                  filter(str_sub(TERYT, 1, 4) == "3203") %>%
+                                  pull(frekwencja) %>%
+                                  mean()))
 
 
-# na poziomie gmin
+# dodajemy poziomy
+wyniki_frek <- wyniki_frek %>%
+  mutate(frekwencja_przed = cut(frekwencja, breaks = seq(0, 100, 10)))
 
+
+# ile jest przedziałów?
+n_przed <- wyniki_frek %>% count(frekwencja_przed) %>% filter(n != 0) %>% nrow()
+
+# na poziomie gmin - dodanie danych do mapy
 wyniki_mapa <- left_join(gminy_mapa %>% mutate(jpt_kod_je = str_sub(jpt_kod_je, 1, 6)),
                          wyniki_frek,
                          by = c("jpt_kod_je" = "TERYT"))
 
+# dane ciągłe
 ggplot() +
   geom_sf(data = wyniki_mapa,
           aes(fill = frekwencja), size = 0.1, color = "gray40") +
@@ -110,9 +125,20 @@ ggplot() +
        fill = "Frekwencja")
 
 
+# przedziałami
+ggplot() +
+  geom_sf(data = wyniki_mapa,
+          aes(fill = frekwencja_przed), size = 0.1, color = "gray40") +
+  geom_sf(data = wojewodztwa, fill = NA, color = "gray10", size = 0.4) +
+  scale_fill_manual(values = rev(RColorBrewer::brewer.pal(n_przed, "RdYlBu"))) +
+  labs(title = "Frekwencja w wyborach samorządowych 2018\nna poziomie gmin",
+       subtitle = "Dane końcowe",
+       caption = "(c) Lukasz Prokulski, fb.com/DaneAnalizy",
+       fill = "Frekwencja")
+
+
 
 # na poziomie powiatów (uśrednione z gmin)
-
 wyniki_pow <- wyniki_frek %>%
   mutate(TERYT = str_sub(TERYT, 1, 4)) %>%
   group_by(TERYT) %>%
