@@ -105,6 +105,25 @@ wyniki_frek <- wyniki_frek %>%
   mutate(frekwencja_przed = cut(frekwencja, breaks = seq(0, 100, 10)))
 
 
+
+# zapisujemy dane, żeby ich nie pobierać za każdym razem
+saveRDS(wyniki_frek, "wyniki_frek.RDS")
+
+# najwyższa i najniższa frekwencja
+wyniki_frek %>%
+  top_n(5, frekwencja) %>%
+  arrange(desc(frekwencja)) %>%
+  left_join(lista_gmin, by = "TERYT") %>%
+  select(TERYT, NAZWA, frekwencja)
+
+wyniki_frek %>%
+  top_n(-5, frekwencja) %>%
+  arrange(frekwencja) %>%
+  left_join(lista_gmin, by = "TERYT") %>%
+  select(TERYT, NAZWA, frekwencja)
+
+
+
 # ile jest przedziałów?
 n_przed <- wyniki_frek %>% count(frekwencja_przed) %>% filter(n != 0) %>% nrow()
 
