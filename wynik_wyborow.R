@@ -69,7 +69,8 @@ plot <- ggplot() +
   theme_void() +
   facet_wrap(~lista)
 
-ggsave(plot, file = "c:/Users/lprokulski/Desktop/plik.png", width=20, height=20, dpi=300)
+ggsave(plot, file = "winiki_list.png", width=20, height=20, dpi=300)
+
 
 # pierwsze miejsca
 wynik_plot %>%
