@@ -8,7 +8,7 @@ map_file_name <- "~/RProjects/!mapy_shp/gminy.shp"
 # dane pobrane z https://wybory2018.pkw.gov.pl/pl/dane-w-arkuszach
 # Wyniki wyborów samorządowych - protokoły
 
-# scieżka do pliku z wynikami wyborów do Sejmików
+# ścieżka do pliku z wynikami wyborów do Sejmików
 file_name <- "wyniki_wyborow/sw.csv"
 
 df <- read_csv2(file_name)
@@ -26,7 +26,7 @@ glosy <- df[, c(2, 23, 24, 28)] %>%
             kart_wydanych = sum(kart_wydanych)) %>%
   ungroup() %>%
   mutate(procent_waznych = 100*glosow_waznych/kart_wydanych,
-         procent_niewaznych = 100*glosow_niewaznych/kart_wydanych,)
+         procent_niewaznych = 100*glosow_niewaznych/kart_wydanych)
 
 
 wynik <- df[, c(2, 29, 30)] %>%
@@ -53,8 +53,7 @@ wynik_plot <- left_join(polska_mapa,
 
 
 glosy_plot <- left_join(polska_mapa,
-                        glosy %>%
-                          distinct(),
+                        glosy %>% distinct(),
                         by = "TERYT")
 
 
@@ -62,8 +61,7 @@ glosy_plot <- left_join(polska_mapa,
 plot <- ggplot() +
   geom_sf(data = polska_mapa,
           size = 0.1, color = "gray90", fill = "white") +
-  geom_sf(data = wynik_plot %>%
-            filter(!is.na(lista)),
+  geom_sf(data = wynik_plot %>% filter(!is.na(lista)),
           aes(fill = procent_na_liste), size = 0.1, color = "gray90") +
   scale_fill_distiller(palette = "Reds", direction = 1) +
   theme_void() +
@@ -77,8 +75,8 @@ wynik_plot %>%
   group_by(TERYT) %>%
   top_n(1, procent_na_liste) %>%
   ggplot() +
-  geom_sf(aes(fill = lista), size = 0.1, color = "gray90") +
-  theme_void()
+    geom_sf(aes(fill = lista), size = 0.1, color = "gray90") +
+    theme_void()
 
 # drugie miejsca
 wynik_plot %>%
@@ -88,13 +86,13 @@ wynik_plot %>%
   filter(n == 2) %>%
   ungroup() %>%
   ggplot() +
-  geom_sf(aes(fill = lista), size = 0.1, color = "gray90") +
-  theme_void()
+    geom_sf(aes(fill = lista), size = 0.1, color = "gray90") +
+    theme_void()
 
 
 # glosy niewazne
 glosy_plot %>%
   ggplot() +
-  geom_sf(aes(fill = procent_niewaznych), size = 0.1, color = "gray90") +
-  scale_fill_distiller(palette = "Reds", direction = 1) +
-  theme_void()
+    geom_sf(aes(fill = procent_niewaznych), size = 0.1, color = "gray90") +
+    scale_fill_distiller(palette = "Reds", direction = 1) +
+    theme_void()
